@@ -92,7 +92,7 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ success: false, message: "User not found!" });
+        .json({ error: "User not found!" });
     }
 
     // if user is exist then check the passord or compare the password
@@ -105,7 +105,7 @@ const loginUser = async (req, res) => {
     if (!checkCorrectPassword) {
       return res
         .status(401)
-        .json({ success: false, message: "Incorrect email or password!" });
+        .json({ error: "Incorrect email or password!" });
     }
 
     generateTokenAndSetCookie(user._id, res);

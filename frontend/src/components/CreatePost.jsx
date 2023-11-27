@@ -42,7 +42,7 @@ const CreatePost = () => {
   const { username } = useParams();
   const params = useParams();
 
-  console.log("PArams->", params); // Log the entire params object
+  console.log("Params->", params); // Log the entire params object
 
   const isEmptyParams = Object.keys(params).length === 0;
 
