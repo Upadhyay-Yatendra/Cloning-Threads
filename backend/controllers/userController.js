@@ -34,6 +34,23 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const suggestedUsers = async (req,res)=>{
+  try {
+
+    
+    // Get the current user ID from the request or wherever you store it
+    const currentUser = await User.findById(req.user._id); // Adjust based on your authentication
+
+    // const currentUserFollowing = req.user.following;
+
+    // Find suggested users (example: users who are not the current user)
+    const suggestedUsers = await User.find({ _id: { $nin: [...currentUser.following, currentUser._id] } }).limit(5);
+
+    res.status(200).json(suggestedUsers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 // this is user signup function
 const signupUser = async (req, res) => {
   try {
@@ -243,4 +260,5 @@ export default {
   followUnfollowUser,
   updateUser,
   getUserProfile,
+  suggestedUsers
 };
