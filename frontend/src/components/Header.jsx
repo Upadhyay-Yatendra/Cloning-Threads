@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { AiFillHome } from "react-icons/ai";
 import { RxAvatar } from "react-icons/rx";
+import { FaSearch } from "react-icons/fa";
 import { Link as RouterLink } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import useLogout from "../hooks/useLogout";
@@ -43,6 +44,11 @@ const Header = () => {
 
       {user && (
         <Flex alignItems={"center"} gap={4}>
+          {user && (
+            <Link as={RouterLink} to="/search">
+              <FaSearch size={24} />
+            </Link>
+          )}
           <Link as={RouterLink} to={`/${user.username}`}>
             <RxAvatar size={24} />
           </Link>

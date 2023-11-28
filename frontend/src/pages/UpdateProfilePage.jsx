@@ -84,7 +84,7 @@ export default function UpdateProfilePage() {
 								<Avatar size='xl' boxShadow={"md"} src={imgUrl || user.profilePic} />
 							</Center>
 							<Center w='full'>
-								<Button w='full' onClick={() => fileRef.current.click()}>
+								<Button w='full' onCalick={() => fileRef.current.click()}>
 									Change Avatar
 								</Button>
 								<Input type='file' hidden ref={fileRef} onChange={handleImageChange} />
