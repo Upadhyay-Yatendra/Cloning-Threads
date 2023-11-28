@@ -23,10 +23,7 @@ const SearchPage = () => {
       borderRadius="lg"
       p="4"
     >
-      {/* Your header components go here */}
-      {/* For example: <Header /> */}
-
-      {/* Search bar */}
+    
       <form onSubmit={handleSearchSubmit}>
         <InputGroup width="100%" maxWidth="600px">
           <InputLeftElement
