@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true })); // To parse form data in the re
 app.use(cookieParser());
 // Use cors middleware
 const corsOptions = {
-  origin: "https://cloning-threads.vercel.app/",
+  origin: "https://cloning-threads.vercel.app",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
