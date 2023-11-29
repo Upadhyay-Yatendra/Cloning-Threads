@@ -1,1 +1,0 @@
-export const BASE_URL = 'https://threads-eu3f.onrender.com'
