@@ -49,11 +49,13 @@ export default function LoginCard() {
         throw new Error(data.error || "Login failed");
       }
 
-      const data = await res.json();
+      const data = await res.json(); console.log("Response Text:",await res.text());
       localStorage.setItem("user-threads", JSON.stringify(data));
       setUser(data);
     } catch (error) {
+      
       console.error("Error during login:", error); // Log detailed error information
+
       showToast("Error", "Login failed. Please try again.", "error");
     } finally {
       setLoading(false);

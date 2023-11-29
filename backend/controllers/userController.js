@@ -34,23 +34,23 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-const suggestedUsers = async (req,res)=>{
+const suggestedUsers = async (req, res) => {
   try {
-
-    
     // Get the current user ID from the request or wherever you store it
     const currentUser = await User.findById(req.user._id); // Adjust based on your authentication
 
     // const currentUserFollowing = req.user.following;
 
     // Find suggested users (example: users who are not the current user)
-    const suggestedUsers = await User.find({ _id: { $nin: [...currentUser.following, currentUser._id] } }).limit(5);
+    const suggestedUsers = await User.find({
+      _id: { $nin: [...currentUser.following, currentUser._id] },
+    }).limit(5);
 
     res.status(200).json(suggestedUsers);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 // this is user signup function
 const signupUser = async (req, res) => {
   try {
@@ -107,22 +107,18 @@ const loginUser = async (req, res) => {
 
     // if user doesn't exist
     if (!user) {
-      return res
-        .status(404)
-        .json({ error: "User not found!" });
+      return res.status(404).json({ error: "User not found!" });
     }
 
-    // if user is exist then check the passord or compare the password
+    // if user exists then checking the password or comparing the password
     const checkCorrectPassword = await bcrypt.compare(
       req.body.password,
       user.password
     );
 
-    // if password incorrect
+    // if password is incorrect
     if (!checkCorrectPassword) {
-      return res
-        .status(401)
-        .json({ error: "Incorrect email or password!" });
+      return res.status(401).json({ error: "Incorrect email or password!" });
     }
 
     generateTokenAndSetCookie(user._id, res);
@@ -135,8 +131,14 @@ const loginUser = async (req, res) => {
       profilePic: user.profilePic,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-    console.log("Error in loginUser: ", error.message);
+    console.error("Error in loginUser:", error.message);
+
+    // Logiing the request details
+    console.log("Request Body:", req.body);
+    console.log("Request Headers:", req.headers);
+
+    
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -204,8 +206,7 @@ const updateUser = async (req, res) => {
         .status(400)
         .json({ error: "You cannot update other user's profile" });
 
-    
-        //IF wanting to update password
+    //IF wanting to update password
 
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -260,5 +261,5 @@ export default {
   followUnfollowUser,
   updateUser,
   getUserProfile,
-  suggestedUsers
+  suggestedUsers,
 };
