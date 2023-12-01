@@ -44,16 +44,20 @@ export default function LoginCard() {
 
       console.log("Request URL:", res.url); // Log the request URL
 
+      let responseBody; // Variable to store the response body
+
       if (!res.ok) {
-        const data = await res.json();
+        responseBody = await res.text(); // Store the response text
+        const data = JSON.parse(responseBody); // Parse the JSON data
         throw new Error(data.error || "Login failed");
       }
 
-      const data = await res.json(); console.log("Response Text:",await res.text());
+      const data = await res.json();
+      console.log("Response Text:", responseBody);
+
       localStorage.setItem("user-threads", JSON.stringify(data));
       setUser(data);
     } catch (error) {
-      
       console.error("Error during login:", error); // Log detailed error information
 
       showToast("Error", "Login failed. Please try again.", "error");
