@@ -2,6 +2,7 @@ import express from "express";
 import postController from "../controllers/postController.js";
 
 import protectRoute from "../middlewares/protectRoute.js";
+import { upload } from "../config/multer.js";
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ const {
 router.get("/feed", protectRoute, getFeedPosts);
 router.get("/:id", getPost);
 router.get("/user/:username", getUserPosts);
-router.post("/create", protectRoute, createPost);
+router.post("/create", protectRoute, upload.single('video') ,createPost);
 router.delete("/:id", protectRoute, deletePost);
 router.put("/like/:id", protectRoute, likeUnlikePost);
 router.put("/reply/:id", protectRoute, replyToPost);

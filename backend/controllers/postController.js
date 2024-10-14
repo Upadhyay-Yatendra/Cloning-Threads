@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import User from "../models/userModel.js";
 import Post from "../models/postModel.js";
 import { v2 as cloudinary } from "cloudinary";
+
 const getPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -48,7 +49,26 @@ const createPost = async (req, res) => {
       img = uploadedResponse.secure_url;
     }
 
-    const newPost = new Post({ postedBy, text, img });
+    let videoUrl;
+    if (req.file) {
+      // Check if video file is uploaded
+      const uploadedVideo = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              resource_type: "video",
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result.secure_url);
+            }
+          )
+          .end(req.file.buffer); // Stream directly from Multer memory storage
+      });
+      videoUrl = uploadedVideo;
+    }
+
+    const newPost = new Post({ postedBy, text, img ,video: videoUrl,});
     await newPost.save();
 
     res.status(201).json(newPost);
