@@ -48,6 +48,9 @@ const createPost = async (req, res) => {
       const uploadedResponse = await cloudinary.uploader.upload(img);
       img = uploadedResponse.secure_url;
     }
+    // The <NAME> you use in multer's upload.single(<NAME>) function 
+    // must be the same as the one you use in 
+    // <input type="file" name="<NAME>" ...>.
 
     let videoUrl;
     if (req.file) {

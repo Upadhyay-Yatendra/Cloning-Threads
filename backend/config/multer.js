@@ -1,4 +1,4 @@
-import multer from 'multer';
+import multer, { diskStorage } from 'multer';
 
 // Multer configuration for memory storage
 const storage = multer.memoryStorage(); // Store files in memory as Buffer for direct Cloudinary upload
