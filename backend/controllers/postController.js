@@ -2,8 +2,10 @@ import mongoose from "mongoose";
 import User from "../models/userModel.js";
 import Post from "../models/postModel.js";
 import { v2 as cloudinary } from "cloudinary";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import axios from "axios"
 
 const getPost = async (req, res) => {
   try {
@@ -50,8 +52,8 @@ const createPost = async (req, res) => {
       const uploadedResponse = await cloudinary.uploader.upload(img);
       img = uploadedResponse.secure_url;
     }
-    // The <NAME> you use in multer's upload.single(<NAME>) function 
-    // must be the same as the one you use in 
+    // The <NAME> you use in multer's upload.single(<NAME>) function
+    // must be the same as the one you use in
     // <input type="file" name="<NAME>" ...>.
 
     let videoUrl;
@@ -73,7 +75,7 @@ const createPost = async (req, res) => {
       videoUrl = uploadedVideo;
     }
 
-    const newPost = new Post({ postedBy, text, img ,video: videoUrl,});
+    const newPost = new Post({ postedBy, text, img, video: videoUrl });
     await newPost.save();
 
     res.status(201).json(newPost);
@@ -201,47 +203,29 @@ const getUserPosts = async (req, res) => {
   }
 };
 
-const streamVideo = (req, res) => {
+const streamVideo = async (req, res) => {
+  try {
+    const videoUrl = req.query.url;
 
-
-  console.log("req.params.filename = " ,req.params.filename )
-  const videoPath = path.join(__dirname, '..', 'uploads', req.params.filename); // adjust the path as per your upload directory
-  const videoStat = fs.statSync(videoPath);
-  const fileSize = videoStat.size;
-  const range = req.headers.range;
-
-  if (range) {
-    const parts = range.replace(/bytes=/, '').split('-');
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-    if (start >= fileSize) {
-      res.status(416).send('Requested range not satisfiable\n' + start + ' >= ' + fileSize);
-      return;
+    if (!videoUrl) {
+      return res.status(400).send("Video URL is required");
     }
 
-    const chunkSize = (end - start) + 1;
-    const file = fs.createReadStream(videoPath, { start, end });
-    const head = {
-      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Length': chunkSize,
-      'Content-Type': 'video/mp4', // Adjust this if you serve other video types
-    };
+    // Fetch the video from Cloudinary
+    const response = await axios({
+      method: "get",
+      url: videoUrl,
+      responseType: "stream", // Important: allows streaming the video
+    });
 
-    res.writeHead(206, head);
-    file.pipe(res);
-  } else {
-    const head = {
-      'Content-Length': fileSize,
-      'Content-Type': 'video/mp4', // Adjust this if needed
-    };
-    res.writeHead(200, head);
-    fs.createReadStream(videoPath).pipe(res);
+    // Set headers to forward the stream to the client
+    res.setHeader("Content-Type", "video/mp4");
+    response.data.pipe(res); // Pipe the video stream directly to the client
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send("Internal Server Error");
   }
 };
-
-
 
 export default {
   createPost,
@@ -251,5 +235,5 @@ export default {
   replyToPost,
   getFeedPosts,
   getUserPosts,
-  streamVideo
+  streamVideo,
 };

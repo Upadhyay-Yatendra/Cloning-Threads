@@ -17,6 +17,11 @@ const {
   streamVideo
 } = postController;
 
+// router.get("/videos", (req, res) => {
+//   console.log("Test route invoked");
+//   res.send("Test route invoked");
+// });
+router.get('/videos', streamVideo);
 router.get("/feed", protectRoute, getFeedPosts);
 router.get("/:id", getPost);
 router.get("/user/:username", getUserPosts);
@@ -24,5 +29,4 @@ router.post("/create", protectRoute, upload.single('video') ,createPost);
 router.delete("/:id", protectRoute, deletePost);
 router.put("/like/:id", protectRoute, likeUnlikePost);
 router.put("/reply/:id", protectRoute, replyToPost);
-router.get('/videos/:filename', streamVideo);
 export default router;
