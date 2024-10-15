@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-
 const postSchema = mongoose.Schema(
   {
     postedBy: {
@@ -17,6 +16,13 @@ const postSchema = mongoose.Schema(
     },
     video: {
       type: String, // To store the video URL
+    },
+    videoMetadata: {
+      duration: { type: Number }, // Video duration in seconds
+      width: { type: Number }, // Video width
+      height: { type: Number }, // Video height
+      format: { type: String }, // Video format (e.g., mp4)
+      size: { type: Number }, // Video file size in bytes
     },
     likes: {
       type: [mongoose.Schema.Types.ObjectId],

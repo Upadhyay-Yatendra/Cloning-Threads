@@ -5,7 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import axios from "axios"
+import axios from "axios";
 
 const getPost = async (req, res) => {
   try {
@@ -74,8 +74,22 @@ const createPost = async (req, res) => {
       });
       videoUrl = uploadedVideo;
     }
-
-    const newPost = new Post({ postedBy, text, img, video: videoUrl });
+    const videoMetadata = await cloudinary.v2.api.resource(videoUrl, {
+      resource_type: "video",
+    });
+    const newPost = new Post({
+      postedBy,
+      text,
+      img,
+      video: videoUrl,
+      videoMetadata: {
+        duration: videoMetadata.duration,
+        width: videoMetadata.width,
+        height: videoMetadata.height,
+        format: videoMetadata.format,
+        size: videoMetadata.bytes,
+      },
+    });
     await newPost.save();
 
     res.status(201).json(newPost);
@@ -211,16 +225,56 @@ const streamVideo = async (req, res) => {
       return res.status(400).send("Video URL is required");
     }
 
-    // Fetch the video from Cloudinary
-    const response = await axios({
-      method: "get",
-      url: videoUrl,
-      responseType: "stream", // Important: allows streaming the video
+    const post = await Post.findOne({ video: videoUrl });
+
+    if (!post) {
+      return res.status(404).send("Video not found in database");
+    }
+
+    let videoMetadata;
+
+    // Check if metadata is already cached in the Post model
+    if (post.videoMetadata && post.videoMetadata.duration) {
+      videoMetadata = post.videoMetadata;
+      console.log("Using cached metadata:", videoMetadata);
+    } else {
+      // Fetch video metadata from Cloudinary if not cached
+      const cloudinaryMetadata = await cloudinary.v2.api.resource(videoUrl, {
+        resource_type: "video",
+      });
+
+      // Update post with the new metadata
+      post.videoMetadata = {
+        duration: cloudinaryMetadata.duration,
+        width: cloudinaryMetadata.width,
+        height: cloudinaryMetadata.height,
+        format: cloudinaryMetadata.format,
+        size: cloudinaryMetadata.bytes,
+      };
+      await post.save();
+
+      videoMetadata = post.videoMetadata;
+      console.log("Fetched and cached new metadata:", videoMetadata);
+    }
+
+    // Apply automatic compression and format optimization
+    const compressedVideoUrl = cloudinary.url(videoUrl, {
+      resource_type: "video",
+      quality: "auto", // Adjusts video quality based on network conditions
+      fetch_format: "auto", // Selects the best format (e.g., WebM, MP4) for the client
+    });
+
+    // Fetch the video from Cloudinary using Axios
+    const response = await axios.get(compressedVideoUrl, {
+      responseType: "stream", // Stream the video
     });
 
     // Set headers to forward the stream to the client
-    res.setHeader("Content-Type", "video/mp4");
-    response.data.pipe(res); // Pipe the video stream directly to the client
+    res.setHeader("Content-Type", `video/${videoMetadata.format || "mp4"}`);
+    res.setHeader("Content-Length", videoMetadata.size);
+
+    // Stream video from Cloudinary to client
+    response.data.pipe(res);
   } catch (err) {
     console.error(err);
     return res.status(500).send("Internal Server Error");
